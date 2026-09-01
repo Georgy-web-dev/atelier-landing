@@ -1,10 +1,26 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
+const TITLE = "Atelier — everything an artist needs";
+const DESCRIPTION =
+  "Instrumentals, works, stages and people. The network where artists find what they need — and own what they buy.";
+
 export const metadata: Metadata = {
-  title: "Atelier — everything an artist needs",
-  description:
-    "Instrumentals, works, stages and people. The network where artists find what they need — and own what they buy.",
+  title: TITLE,
+  description: DESCRIPTION,
+  applicationName: "Atelier",
+  openGraph: {
+    title: TITLE,
+    description: DESCRIPTION,
+    siteName: "Atelier",
+    type: "website",
+    locale: "en",
+  },
+  twitter: {
+    card: "summary",
+    title: TITLE,
+    description: DESCRIPTION,
+  },
 };
 
 export const viewport: Viewport = {

@@ -2,7 +2,7 @@ import gsap from "gsap";
 import Observer from "gsap/Observer";
 import SplitText from "gsap/SplitText";
 import { CHAPTERS } from "./chapters";
-import { INK, MOBILE_WIDTH, createStudio } from "./scenes";
+import { MOBILE_WIDTH, createStudio } from "./scenes";
 
 const WHEEL_THRESHOLD = 45;
 const WHEEL_RESET_MS = 220;
@@ -21,6 +21,7 @@ const STALLED_FRAME_MS = 120;
 const SLOW_FRAME_BUDGET = 70;
 const MAX_FRAME_MS = 50;
 const LOW_POWER_CORES = 4;
+const RESIZE_SETTLE_MS = 140;
 const POINTER_DRIFT = 0.06;
 const MILLISECONDS = 1000;
 
@@ -96,12 +97,15 @@ function entrance(screen: HTMLElement) {
 }
 
 export function startMotion(): () => void {
+  if (!document.documentElement.classList.contains("mode-game")) return () => {};
+
   gsap.registerPlugin(Observer, SplitText);
 
   const canvas = document.querySelector<HTMLCanvasElement>(".studio");
   const veil = document.querySelector<HTMLElement>(".veil");
   const markerIndex = document.querySelector<HTMLElement>("[data-marker-index]");
   const markerLabel = document.querySelector<HTMLElement>("[data-marker-label]");
+  const announce = document.querySelector<HTMLElement>("[data-announce]");
   const screens = Array.from(document.querySelectorAll<HTMLElement>(".screen"));
   const ticks = Array.from(document.querySelectorAll<HTMLElement>(".spine__tick"));
   if (!canvas || !veil || !screens.length) return () => {};
@@ -131,6 +135,12 @@ export function startMotion(): () => void {
   const fit = () => studio.resize(window.innerWidth, window.innerHeight);
   fit();
 
+  let resizeTimer = 0;
+  const onResize = () => {
+    window.clearTimeout(resizeTimer);
+    resizeTimer = window.setTimeout(fit, RESIZE_SETTLE_MS);
+  };
+
   const goTo = (next: number) => {
     if (busy) {
       queued = clampIndex(next) - current;
@@ -142,7 +152,7 @@ export function startMotion(): () => void {
     const from = current;
     current = next;
     ticks.forEach((tick, index) => tick.classList.toggle("is-on", index === next));
-    veil.style.background = INK[next];
+    veil.style.background = CHAPTERS[next].ink;
 
     const timeline = gsap
       .timeline({
@@ -180,6 +190,7 @@ export function startMotion(): () => void {
         screens[next].classList.add("is-active");
         if (markerIndex) markerIndex.textContent = pad(next + 1);
         if (markerLabel) markerLabel.textContent = CHAPTERS[next].label;
+        if (announce) announce.textContent = `${CHAPTERS[next].label}. ${CHAPTERS[next].title}.`;
         timelines.add(entrance(screens[next]));
       }, "covered")
       .to(veil, { opacity: 0, duration: VEIL_FALL_SECONDS, ease: "power2.out" }, `covered+=${VEIL_FALL_DELAY}`);
@@ -191,7 +202,11 @@ export function startMotion(): () => void {
 
   const onWheel = (event: WheelEvent) => {
     const now = performance.now();
-    if (!busy && now - settledAt < INPUT_COOLDOWN_MS) return;
+    if (busy || now - settledAt < INPUT_COOLDOWN_MS) {
+      accumulated = 0;
+      accumulatedAt = now;
+      return;
+    }
     if (now - accumulatedAt > WHEEL_RESET_MS) accumulated = 0;
     accumulatedAt = now;
     accumulated += event.deltaY;
@@ -221,6 +236,7 @@ export function startMotion(): () => void {
 
   const jumps = Array.from(document.querySelectorAll<HTMLElement>("[data-go]"));
   const onJump = (event: Event) => {
+    event.preventDefault();
     const target = event.currentTarget as HTMLElement;
     goTo(Number(target.dataset.go));
   };
@@ -232,7 +248,7 @@ export function startMotion(): () => void {
     studio.frame(Math.min(delta, MAX_FRAME_MS) / MILLISECONDS, POINTER_DRIFT);
   };
 
-  window.addEventListener("resize", fit);
+  window.addEventListener("resize", onResize);
   window.addEventListener("wheel", onWheel, { passive: true });
   window.addEventListener("pointermove", onPointerMove);
   window.addEventListener("keydown", onKeyDown);
@@ -243,7 +259,7 @@ export function startMotion(): () => void {
     type: "touch",
     tolerance: SWIPE_TOLERANCE,
     dragMinimum: SWIPE_MIN_DRAG,
-    preventDefault: true,
+    preventDefault: false,
     onUp: () => step(1),
     onDown: () => step(-1),
   });
@@ -262,7 +278,8 @@ export function startMotion(): () => void {
 
   return () => {
     live = false;
-    window.removeEventListener("resize", fit);
+    window.clearTimeout(resizeTimer);
+    window.removeEventListener("resize", onResize);
     window.removeEventListener("wheel", onWheel);
     window.removeEventListener("pointermove", onPointerMove);
     window.removeEventListener("keydown", onKeyDown);

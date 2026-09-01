@@ -15,22 +15,25 @@ export default function Page() {
       <div className="veil" aria-hidden="true" />
 
       <header className="hud">
-        <button className="logo" data-go="0">
+        <a className="logo" href={`#${CHAPTERS[0].id}`} data-go="0">
           Atelier
-        </button>
+        </a>
         <span className="hud__tag">Early access</span>
       </header>
 
       <nav className="spine" aria-label="Chapters">
         {CHAPTERS.map((chapter, index) => (
-          <button
+          <a
             key={chapter.id}
             className={index === 0 ? "spine__tick is-on" : "spine__tick"}
+            href={`#${chapter.id}`}
             data-go={index}
             aria-label={chapter.label}
           />
         ))}
       </nav>
+
+      <p className="reader" aria-live="polite" data-announce />
 
       <p className="marker" aria-hidden="true">
         <i data-marker-index>01</i> / {pad(CHAPTERS.length)} · <span data-marker-label>{CHAPTERS[0].label}</span>
@@ -40,6 +43,7 @@ export default function Page() {
         {CHAPTERS.map((chapter, index) => (
           <section
             key={chapter.id}
+            id={chapter.id}
             className={index === 0 ? "screen is-active" : "screen"}
             data-screen={chapter.id}
           >

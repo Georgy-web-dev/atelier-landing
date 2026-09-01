@@ -53,6 +53,8 @@ body {
 }
 
 .logo {
+  display: inline-block;
+  text-decoration: none;
   font-family: var(--display);
   font-weight: 800;
   font-size: 1.3rem;
@@ -84,6 +86,7 @@ body {
 }
 
 .spine__tick {
+  display: block;
   width: 1rem;
   height: 2px;
   padding: 0;
@@ -111,6 +114,15 @@ body {
 
 .marker i { font-style: normal; color: var(--pigment-light); }
 .marker span { color: var(--plaster); }
+
+.reader {
+  position: fixed;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
 
 .screens { position: relative; z-index: 10; }
 
@@ -249,3 +261,6 @@ body {
 .mail:hover { color: var(--pigment-light); border-bottom-color: var(--clay); }
 
 .mode-flow body { overflow: auto; }
+.mode-flow .spine,
+.mode-flow .marker,
+.mode-flow .veil { display: none; }

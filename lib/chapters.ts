@@ -1,7 +1,12 @@
 export type Row = { index: string; name: string; note: string };
 
+export type Tool = "brush" | "notation" | "strings" | "sketch" | "signature" | "finale";
+
 export type Chapter = {
   id: string;
+  tool: Tool;
+  ink: string;
+  glow: string;
   label: string;
   kicker: string;
   title: string;
@@ -14,6 +19,9 @@ export type Chapter = {
 export const CHAPTERS: Chapter[] = [
   {
     id: "hero",
+    tool: "brush",
+    ink: "#7C5CFF",
+    glow: "#C3B0FF",
     label: "Atelier",
     kicker: "The artist network",
     title: "Atelier",
@@ -22,6 +30,9 @@ export const CHAPTERS: Chapter[] = [
   },
   {
     id: "works",
+    tool: "notation",
+    ink: "#D08663",
+    glow: "#E8B187",
     label: "Works",
     kicker: "Works",
     title: "Find the material",
@@ -36,6 +47,9 @@ export const CHAPTERS: Chapter[] = [
   },
   {
     id: "stage",
+    tool: "strings",
+    ink: "#FFB25E",
+    glow: "#FFD9A0",
     label: "Stage",
     kicker: "Stage",
     title: "Find the room",
@@ -48,6 +62,9 @@ export const CHAPTERS: Chapter[] = [
   },
   {
     id: "people",
+    tool: "sketch",
+    ink: "#8FA8FF",
+    glow: "#C7D4FF",
     label: "People",
     kicker: "People",
     title: "Find your people",
@@ -60,6 +77,9 @@ export const CHAPTERS: Chapter[] = [
   },
   {
     id: "rights",
+    tool: "signature",
+    ink: "#A9C8FF",
+    glow: "#E4EEFF",
     label: "Rights",
     kicker: "Rights",
     title: "Own it outright",
@@ -73,6 +93,9 @@ export const CHAPTERS: Chapter[] = [
   },
   {
     id: "close",
+    tool: "finale",
+    ink: "#F2ECE0",
+    glow: "#9B7CFF",
     label: "Contact",
     kicker: "Atelier",
     title: "The studio is opening",

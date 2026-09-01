@@ -15,10 +15,7 @@ import {
   wave,
   type Point,
 } from "./ink";
-
-export const INK = ["#7C5CFF", "#D08663", "#FFB25E", "#8FA8FF", "#A9C8FF", "#F2ECE0"];
-
-const GLOW = ["#C3B0FF", "#E8B187", "#FFD9A0", "#C7D4FF", "#E4EEFF", "#9B7CFF"];
+import { CHAPTERS, type Tool } from "./chapters";
 
 const GROUND = "#0E0B1A";
 
@@ -548,7 +545,16 @@ const finale: Painter = (ctx, beat, ink, glow) => {
   sketch(ctx, { ...beat, fade: beat.fade * FINALE.sketchFade }, ink, glow);
 };
 
-const PAINTERS: Painter[] = [brushes, notes, strings, sketch, signature, finale];
+const TOOLS: Record<Tool, Painter> = {
+  brush: brushes,
+  notation: notes,
+  strings,
+  sketch,
+  signature,
+  finale,
+};
+
+const painterFor = (index: number) => TOOLS[CHAPTERS[index].tool];
 
 export function createStudio(canvas: HTMLCanvasElement, lowPower: boolean) {
   const ctx = canvas.getContext("2d", { alpha: false });
@@ -585,10 +591,10 @@ export function createStudio(canvas: HTMLCanvasElement, lowPower: boolean) {
     const cx = width * (portrait ? WASH.portraitX : WASH.landscapeX);
     const cy = height * (portrait ? WASH.portraitY : WASH.landscapeY);
 
-    wash = INK.map((colour, index) => {
+    wash = CHAPTERS.map((chapter) => {
       const gradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, Math.hypot(width, height) * WASH.radius);
-      gradient.addColorStop(0, `${colour}${WASH.core}`);
-      gradient.addColorStop(WASH.midStop, `${GLOW[index]}${WASH.mid}`);
+      gradient.addColorStop(0, `${chapter.ink}${WASH.core}`);
+      gradient.addColorStop(WASH.midStop, `${chapter.glow}${WASH.mid}`);
       gradient.addColorStop(1, "#00000000");
       return gradient;
     });
@@ -666,8 +672,10 @@ export function createStudio(canvas: HTMLCanvasElement, lowPower: boolean) {
       ctx.translate(pointer.x * width * 0.012, pointer.y * height * 0.012);
 
       const leaving = from === to ? 0 : clamp(1 - phase / HANDOVER_WINDOW);
-      if (leaving > 0) PAINTERS[from](ctx, beatFor(leaving * HANDOVER_FADE, from), INK[from], GLOW[from]);
-      PAINTERS[to](ctx, beatFor(1, to), INK[to], GLOW[to]);
+      if (leaving > 0) {
+        painterFor(from)(ctx, beatFor(leaving * HANDOVER_FADE, from), CHAPTERS[from].ink, CHAPTERS[from].glow);
+      }
+      painterFor(to)(ctx, beatFor(1, to), CHAPTERS[to].ink, CHAPTERS[to].glow);
 
       if (!scrim) return;
       ctx.setTransform(density, 0, 0, density, 0, 0);
